@@ -3,11 +3,83 @@
 :root {
   --background: #0a0a0a;
   --foreground: #ededed;
-  --gold: #FFD700;
-  --gold-dark: #FFA500;
-  --gold-light: #FFED4E;
-  --card-bg: #1a1a1a;
-  --border: #2a2a2a;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Custom Tailwind utilities for gold colors */
+@layer utilities {
+  .bg-gold {
+    background-color: #FFD700;
+  }
+  .bg-gold-dark {
+    background-color: #FFA500;
+  }
+  .bg-gold-light {
+    background-color: #FFED4E;
+  }
+  .text-gold {
+    color: #FFD700;
+  }
+  .text-gold-dark {
+    color: #FFA500;
+  }
+  .text-gold-light {
+    color: #FFED4E;
+  }
+  .border-gold {
+    border-color: #FFD700;
+  }
+  .border-gold-dark {
+    border-color: #FFA500;
+  }
+  .border-gold-light {
+    border-color: #FFED4E;
+  }
+  .hover\:bg-gold-dark:hover {
+    background-color: #FFA500;
+  }
+  .hover\:bg-gold:hover {
+    background-color: #FFD700;
+  }
+  .hover\:text-gold-light:hover {
+    color: #FFED4E;
+  }
+  .bg-card {
+    background-color: #1a1a1a;
+  }
+  .border-border {
+    border-color: #2a2a2a;
+  }
+  .hover\:border-gold\/50:hover {
+    border-color: rgba(255, 215, 0, 0.5);
+  }
+  .bg-gold\/10 {
+    background-color: rgba(255, 215, 0, 0.1);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FFA500;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FFD700;
 }
 
 body {
