@@ -3,154 +3,186 @@
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { 
+  HomeIcon, 
+  UserGroupIcon, 
+  CalendarIcon,
+  ChartBarIcon,
+  Cog6ToothIcon,
+  UserIcon
+} from '@heroicons/react/24/outline';
+import {
+  HomeIcon as HomeIconSolid,
+  UserGroupIcon as UserGroupIconSolid,
+  CalendarIcon as CalendarIconSolid,
+  ChartBarIcon as ChartBarIconSolid,
+  Cog6ToothIcon as Cog6ToothIconSolid,
+  UserIcon as UserIconSolid
+} from '@heroicons/react/24/solid';
 import { useState } from 'react';
 
 export default function Navigation() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const isBarberRoute = pathname?.startsWith('/barber');
 
   const customerLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/queue', label: 'Queue Status' },
-    { href: '/booking', label: 'Book Appointment' },
+    { 
+      href: '/', 
+      label: 'Home',
+      icon: HomeIcon,
+      iconSolid: HomeIconSolid
+    },
+    { 
+      href: '/queue', 
+      label: 'Queue',
+      icon: UserGroupIcon,
+      iconSolid: UserGroupIconSolid
+    },
+    { 
+      href: '/booking', 
+      label: 'Book',
+      icon: CalendarIcon,
+      iconSolid: CalendarIconSolid
+    },
   ];
 
   const barberLinks = [
-    { href: '/barber/dashboard', label: 'Dashboard' },
-    { href: '/barber/queue', label: 'Manage Queue' },
-    { href: '/barber/appointments', label: 'Appointments' },
+    { 
+      href: '/barber/dashboard', 
+      label: 'Dashboard',
+      icon: ChartBarIcon,
+      iconSolid: ChartBarIconSolid
+    },
+    { 
+      href: '/barber/queue', 
+      label: 'Queue',
+      icon: UserGroupIcon,
+      iconSolid: UserGroupIconSolid
+    },
+    { 
+      href: '/barber/appointments', 
+      label: 'Appointments',
+      icon: CalendarIcon,
+      iconSolid: CalendarIconSolid
+    },
   ];
 
   const links = isBarberRoute ? barberLinks : customerLinks;
 
   return (
-    <nav className="bg-card border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
+    <>
+      {/* Top brand bar - only visible on larger screens */}
+      <div className="hidden md:block bg-card border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center">
                 <span className="text-black font-bold text-lg">K</span>
               </div>
               <span className="text-xl font-bold text-gold">King's Barber</span>
             </Link>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`${
-                  pathname === link.href
-                    ? 'text-gold border-b-2 border-gold'
-                    : 'text-gray-300 hover:text-gold'
-                } transition-colors duration-200 pb-1`}
-              >
-                {link.label}
-              </Link>
-            ))}
             
-            {session && isBarberRoute ? (
+            {session && isBarberRoute && (
               <div className="flex items-center space-x-4">
                 <span className="text-gray-300">Welcome, {session.user.name}</span>
                 <button
                   onClick={() => signOut()}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
                 >
                   Sign Out
                 </button>
               </div>
-            ) : !session && isBarberRoute ? (
-              <Link
-                href="/barber/login"
-                className="bg-gold hover:bg-gold-dark text-black px-4 py-2 rounded-lg font-medium transition-colors"
-              >
-                Barber Login
-              </Link>
-            ) : (
-              <Link
-                href="/barber/login"
-                className="text-gray-300 hover:text-gold transition-colors"
-              >
-                Barber Portal
-              </Link>
             )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-300 hover:text-gold"
-            >
-              {isMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3Icon className="h-6 w-6" />
-              )}
-            </button>
-          </div>
         </div>
+      </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-border">
-              {links.map((link) => (
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
+        <div className="max-w-md mx-auto px-4">
+          <div className="flex justify-around items-center py-2">
+            {links.map((link) => {
+              const isActive = pathname === link.href;
+              const Icon = isActive ? link.iconSolid : link.icon;
+              
+              return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`${
-                    pathname === link.href
-                      ? 'text-gold bg-card'
-                      : 'text-gray-300 hover:text-gold hover:bg-card'
-                  } block px-3 py-2 rounded-md text-base font-medium transition-colors`}
-                  onClick={() => setIsMenuOpen(false)}
+                  className="flex flex-col items-center py-2 px-3 min-w-0 flex-1"
                 >
-                  {link.label}
-                </Link>
-              ))}
-              
-              {session && isBarberRoute ? (
-                <div className="px-3 py-2">
-                  <p className="text-gray-300 text-sm mb-2">Welcome, {session.user.name}</p>
-                  <button
-                    onClick={() => {
-                      signOut();
-                      setIsMenuOpen(false);
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  <Icon 
+                    className={`h-6 w-6 mb-1 ${
+                      isActive ? 'text-gold' : 'text-gray-400'
+                    } transition-colors`} 
+                  />
+                  <span 
+                    className={`text-xs ${
+                      isActive ? 'text-gold' : 'text-gray-400'
+                    } transition-colors truncate`}
                   >
-                    Sign Out
-                  </button>
-                </div>
-              ) : !session && isBarberRoute ? (
-                <Link
-                  href="/barber/login"
-                  className="block px-3 py-2 text-gold hover:bg-card rounded-md font-medium"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Barber Login
+                    {link.label}
+                  </span>
                 </Link>
+              );
+            })}
+            
+            {/* User/Profile Section */}
+            <div className="flex flex-col items-center py-2 px-3 min-w-0 flex-1">
+              {session && isBarberRoute ? (
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex flex-col items-center"
+                >
+                  <UserIconSolid className="h-6 w-6 mb-1 text-gold transition-colors" />
+                  <span className="text-xs text-gold transition-colors truncate">
+                    Profile
+                  </span>
+                </button>
               ) : (
                 <Link
                   href="/barber/login"
-                  className="block px-3 py-2 text-gray-300 hover:text-gold hover:bg-card rounded-md"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="flex flex-col items-center"
                 >
-                  Barber Portal
+                  <UserIcon className="h-6 w-6 mb-1 text-gray-400 transition-colors" />
+                  <span className="text-xs text-gray-400 transition-colors truncate">
+                    {isBarberRoute ? 'Login' : 'Barber'}
+                  </span>
                 </Link>
               )}
             </div>
           </div>
-        )}
-      </div>
-    </nav>
+        </div>        {/* User menu dropdown */}
+        {showUserMenu && session && isBarberRoute && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+              onClick={() => setShowUserMenu(false)}
+            />
+            
+            {/* Menu content */}
+            <div className="absolute bottom-full left-0 right-0 bg-card border-t border-border z-50">
+              <div className="max-w-md mx-auto px-4 py-3">
+                <div className="text-center mb-3">
+                  <p className="text-gray-300 text-sm">Welcome, {session.user.name}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    signOut();
+                    setShowUserMenu(false);
+                  }}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </>        )}
+      </nav>
+    </>
   );
 }

@@ -17,7 +17,7 @@ export default function Home() {
         <div className="relative z-20 text-center max-w-4xl mx-auto px-4">
           <div className="mb-8">
             <div className="w-24 h-24 bg-gradient-to-br from-gold to-gold-dark rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-black font-bold text-4xl">K</span>
+              <span className="text-black font-bold bg-white px-2 rounded-full text-4xl">K</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-4">
               King's <span className="text-gold">Barber</span>
@@ -30,13 +30,13 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/queue"
-              className="bg-gold hover:bg-gold-dark text-black px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105"
+              className="bg-yellow-400 hover:bg-gold-dark text-black px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105"
             >
               Join Queue
             </Link>
             <Link
               href="/booking"
-              className="bg-transparent border-2 border-gold text-gold hover:bg-gold hover:text-black px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300"
+              className="bg-transparent border-2 border-gold text-gold hover:bg-yellow-400 hover:text-black px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300"
             >
               Book Appointment
             </Link>

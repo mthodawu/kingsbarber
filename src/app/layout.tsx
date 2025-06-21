@@ -17,8 +17,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-black text-white min-h-screen">
         <Providers>
+          <main className="pb-20">{children}</main>
           <Navigation />
-          <main>{children}</main>
         </Providers>
       </body>
     </html>
