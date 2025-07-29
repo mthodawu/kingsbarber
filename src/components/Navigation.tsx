@@ -75,7 +75,7 @@ export default function Navigation() {
   return (
     <>
       {/* Top brand bar - only visible on larger screens */}
-      <div className="hidden md:block bg-card border-b border-border">
+      {/* <div className="hidden  bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-2">
@@ -98,90 +98,93 @@ export default function Navigation() {
             )}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50">
-        <div className="max-w-md mx-auto px-4">
+      <nav className="fixed bottom-0 left-1/2 transform -translate-x-1/2 sm:w-full max-w-lg mx-4 mb-4 bg-black/30 backdrop-blur-md border border-border z-50 rounded-full shadow-2xl">
+        <div className="px-4">
           <div className="flex justify-around items-center py-2">
-            {links.map((link) => {
-              const isActive = pathname === link.href;
-              const Icon = isActive ? link.iconSolid : link.icon;
-              
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="flex flex-col items-center py-2 px-3 min-w-0 flex-1"
-                >
-                  <Icon 
-                    className={`h-6 w-6 mb-1 ${
-                      isActive ? 'text-gold' : 'text-gray-400'
-                    } transition-colors`} 
-                  />
-                  <span 
-                    className={`text-xs ${
-                      isActive ? 'text-gold' : 'text-gray-400'
-                    } transition-colors truncate`}
-                  >
-                    {link.label}
-                  </span>
-                </Link>
-              );
-            })}
-            
-            {/* User/Profile Section */}
-            <div className="flex flex-col items-center py-2 px-3 min-w-0 flex-1">
-              {session && isBarberRoute ? (
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex flex-col items-center"
-                >
-                  <UserIconSolid className="h-6 w-6 mb-1 text-gold transition-colors" />
-                  <span className="text-xs text-gold transition-colors truncate">
-                    Profile
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  href="/barber/login"
-                  className="flex flex-col items-center"
-                >
-                  <UserIcon className="h-6 w-6 mb-1 text-gray-400 transition-colors" />
-                  <span className="text-xs text-gray-400 transition-colors truncate">
-                    {isBarberRoute ? 'Login' : 'Barber'}
-                  </span>
-                </Link>
-              )}
-            </div>
+        {links.map((link) => {
+          const isActive = pathname === link.href;
+          const Icon = isActive ? link.iconSolid : link.icon;
+          
+          return (
+            <Link
+          key={link.href}
+          href={link.href}
+          className="flex flex-col items-center py-2 px-3 min-w-0 flex-1 text-md"
+            >
+          <Icon 
+            className={`h-5 w-5 sm:h-6 sm:w-6 mb-1 ${
+              isActive ? 'text-gold' : 'text-gray-400'
+            } transition-colors`} 
+          />
+          <span 
+            className={`text-md ${
+              isActive ? 'text-gold' : 'text-gray-400'
+            } transition-colors truncate`}
+          >
+            {link.label}
+          </span>
+            </Link>
+          );
+        })}
+        
+        {/* User/Profile Section */}
+        <div className="flex flex-col items-center py-2 px-3 min-w-0 flex-1">
+          {session && isBarberRoute ? (
+            <button
+          onClick={() => setShowUserMenu(!showUserMenu)}
+          className="flex flex-col items-center"
+            >
+          <UserIconSolid className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-gold transition-colors" />
+          <span className="text-sm text-gold transition-colors truncate">
+            Profile
+          </span>
+            </button>
+          ) : (
+            <Link
+          href="/barber/login"
+          className="flex flex-col items-center"
+            >
+          <UserIcon className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-gray-400 transition-colors" />
+          <span className="text-sm text-gray-400 transition-colors truncate">
+            {isBarberRoute ? 'Login' : 'Barber'}
+          </span>
+            </Link>
+          )}
+        </div>
           </div>
-        </div>        {/* User menu dropdown */}
+        </div>
+        
+        {/* User menu dropdown */}
         {showUserMenu && session && isBarberRoute && (
           <>
-            {/* Backdrop */}
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-40"
-              onClick={() => setShowUserMenu(false)}
-            />
-            
-            {/* Menu content */}
-            <div className="absolute bottom-full left-0 right-0 bg-card border-t border-border z-50">
-              <div className="max-w-md mx-auto px-4 py-3">
-                <div className="text-center mb-3">
-                  <p className="text-gray-300 text-sm">Welcome, {session.user.name}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    signOut();
-                    setShowUserMenu(false);
-                  }}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
-                >
-                  Sign Out
-                </button>
-              </div>
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          onClick={() => setShowUserMenu(false)}
+        />
+        
+        {/* Menu content */}
+        <div className="absolute bottom-full left-0 right-0 bg-black/40 backdrop-blur-md border border-gold/20 rounded-t-2xl z-50 mb-2">
+          <div className="px-4 py-3">
+            <div className="text-center mb-3">
+          <p className="text-gray-300 text-sm">Welcome, {session.user.name}</p>
             </div>
-          </>        )}
+            <button
+          onClick={() => {
+            signOut();
+            setShowUserMenu(false);
+          }}
+          className="w-full bg-red-600/80 hover:bg-red-700/80 backdrop-blur-sm text-white px-4 py-2 rounded-lg transition-colors text-sm border border-red-500/30"
+            >
+          Sign Out
+            </button>
+          </div>
+        </div>
+          </>
+        )}
       </nav>
     </>
   );

@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { format, addDays, startOfWeek, isSameDay, isToday, isBefore } from 'date-fns';
+import { Listbox, Transition, RadioGroup } from '@headlessui/react';
+import { Fragment } from 'react';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -13,10 +15,10 @@ export default function BookingPage() {
   const [selectedBarber, setSelectedBarber] = useState('');
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [barbers, setBarbers] = useState<Array<{_id: string, name: string}>>([]);
+  const [selectedBarberObj, setSelectedBarberObj] = useState<{_id: string, name: string} | null>(null);
   const [formData, setFormData] = useState({
     customerName: '',
     customerPhone: '',
-    service: 'haircut',
     notes: '',
   });
   const [loading, setLoading] = useState(false);
@@ -26,9 +28,11 @@ export default function BookingPage() {
     { id: 'haircut', name: 'Classic Haircut', time: '30 min' },
     { id: 'beard-trim', name: 'Beard Trim', time: '20 min' },
     { id: 'haircut-beard', name: 'Haircut + Beard', time: '45 min' },
-    { id: 'shave', name: 'Hot Towel Shave', time: '25 min' },
-    { id: 'styling', name: 'Hair Styling', time: '35 min' },
+    // { id: 'shave', name: 'Hot Towel Shave', time: '25 min' },
+    // { id: 'styling', name: 'Hair Styling', time: '35 min' },
   ];
+
+  const [selectedService, setSelectedService] = useState(services[0]);
 
   const timeSlots = [
     '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
@@ -90,9 +94,10 @@ export default function BookingPage() {
         },
         body: JSON.stringify({
           ...formData,
+          service: selectedService.id,
           date: selectedDate.toISOString(),
           time: selectedTime,
-          barberId: selectedBarber || null,
+          barberId: selectedBarberObj?._id || null,
         }),
       });
 
@@ -166,16 +171,17 @@ export default function BookingPage() {
                     onClick={() => handleDateSelect(date)}
                     disabled={isPast}
                     className={`
-                      aspect-square rounded-lg text-sm font-medium transition-colors
+                      aspect-square rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-black
                       ${isPast 
-                        ? 'text-gray-600 cursor-not-allowed' 
+                        ? 'text-gray-600 cursor-not-allowed opacity-50' 
                         : isSelected 
-                          ? 'bg-gold text-black' 
+                          ? 'bg-gold text-black shadow-lg transform scale-105' 
                           : isTodayDate 
-                            ? 'bg-gold/20 text-gold border border-gold' 
-                            : 'text-gray-300 hover:bg-gray-800'
+                            ? 'bg-gold/20 text-gold border border-gold hover:bg-gold/30' 
+                            : 'text-gray-300 hover:bg-gray-800 hover:text-gold'
                       }
                     `}
+                    aria-label={`Select ${format(date, 'EEEE, MMMM d, yyyy')}`}
                   >
                     {format(date, 'd')}
                   </button>
@@ -188,23 +194,39 @@ export default function BookingPage() {
                 <h3 className="text-lg font-bold text-gold mb-4">
                   Available Times for {format(selectedDate, 'EEEE, MMMM d')}
                 </h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {timeSlots.map(time => (
-                    <button
-                      key={time}
-                      onClick={() => setSelectedTime(time)}
-                      className={`
-                        px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                        ${selectedTime === time 
-                          ? 'bg-gold text-black' 
-                          : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                <RadioGroup value={selectedTime} onChange={setSelectedTime}>
+                  <RadioGroup.Label className="sr-only">Select a time slot</RadioGroup.Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {timeSlots.map((time) => (
+                      <RadioGroup.Option
+                        key={time}
+                        value={time}
+                        className={({ active, checked }) =>
+                          `${
+                            active
+                              ? 'ring-2 ring-gold ring-offset-2 ring-offset-black'
+                              : ''
+                          }
+                          ${
+                            checked ? 'bg-gold text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                          }
+                          relative flex cursor-pointer rounded-lg px-3 py-2 focus:outline-none transition-colors`
                         }
-                      `}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+                      >
+                        {({ active, checked }) => (
+                          <div className="flex w-full items-center justify-center">
+                            <div className="text-sm font-medium">
+                              {time}
+                            </div>
+                            {checked && (
+                              <CheckIcon className="ml-2 h-4 w-4" aria-hidden="true" />
+                            )}
+                          </div>
+                        )}
+                      </RadioGroup.Option>
+                    ))}
+                  </div>
+                </RadioGroup>
               </div>
             )}
           </div>
@@ -231,7 +253,7 @@ export default function BookingPage() {
                   value={formData.customerName}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent text-white placeholder-gray-400"
+                  className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold transition-all duration-200 text-white placeholder-gray-400"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -247,50 +269,149 @@ export default function BookingPage() {
                   value={formData.customerPhone}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent text-white placeholder-gray-400"
+                  className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold transition-all duration-200 text-white placeholder-gray-400"
                   placeholder="(555) 123-4567"
                 />
               </div>
 
               <div>
-                <label htmlFor="service" className="block text-sm font-medium text-gold mb-2">
+                <label className="block text-sm font-medium text-gold mb-2">
                   Select Service *
                 </label>
-                <select
-                  id="service"
-                  name="service"
-                  value={formData.service}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent text-white"
-                >
-                  {services.map(service => (
-                    <option key={service.id} value={service.id}>
-                      {service.name} ({service.time})
-                    </option>
-                  ))}
-                </select>
+                <Listbox value={selectedService} onChange={setSelectedService}>
+                  <div className="relative">
+                    <Listbox.Button className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent text-white text-left cursor-pointer">
+                      <span className="block truncate">{selectedService.name} ({selectedService.time})</span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <ChevronUpDownIcon
+                          className="h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                      </span>
+                    </Listbox.Button>
+                    <Transition
+                      as={Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                    >
+                      <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-card border border-border py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {services.map((service) => (
+                          <Listbox.Option
+                            key={service.id}
+                            className={({ active }) =>
+                              `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                                active ? 'bg-gold/10 text-gold' : 'text-gray-300'
+                              }`
+                            }
+                            value={service}
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span
+                                  className={`block truncate ${
+                                    selected ? 'font-medium' : 'font-normal'
+                                  }`}
+                                >
+                                  {service.name} ({service.time})
+                                </span>
+                                {selected ? (
+                                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gold">
+                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                ) : null}
+                              </>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </Transition>
+                  </div>
+                </Listbox>
               </div>
 
               {barbers.length > 0 && (
                 <div>
-                  <label htmlFor="selectedBarber" className="block text-sm font-medium text-gold mb-2">
+                  <label className="block text-sm font-medium text-gold mb-2">
                     Preferred Barber (Optional)
                   </label>
-                  <select
-                    id="selectedBarber"
-                    name="selectedBarber"
-                    value={selectedBarber}
-                    onChange={(e) => setSelectedBarber(e.target.value)}
-                    className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent text-white"
-                  >
-                    <option value="">Any available barber</option>
-                    {barbers.map(barber => (
-                      <option key={barber._id} value={barber._id}>
-                        {barber.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Listbox value={selectedBarberObj} onChange={setSelectedBarberObj}>
+                    <div className="relative">
+                      <Listbox.Button className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent text-white text-left cursor-pointer">
+                        <span className="block truncate">
+                          {selectedBarberObj ? selectedBarberObj.name : 'Any available barber'}
+                        </span>
+                        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                          <ChevronUpDownIcon
+                            className="h-5 w-5 text-gray-400"
+                            aria-hidden="true"
+                          />
+                        </span>
+                      </Listbox.Button>
+                      <Transition
+                        as={Fragment}
+                        leave="transition ease-in duration-100"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                      >
+                        <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-card border border-border py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <Listbox.Option
+                            className={({ active }) =>
+                              `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                                active ? 'bg-gold/10 text-gold' : 'text-gray-300'
+                              }`
+                            }
+                            value={null}
+                          >
+                            {({ selected }) => (
+                              <>
+                                <span
+                                  className={`block truncate ${
+                                    selected ? 'font-medium' : 'font-normal'
+                                  }`}
+                                >
+                                  Any available barber
+                                </span>
+                                {selected ? (
+                                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gold">
+                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                ) : null}
+                              </>
+                            )}
+                          </Listbox.Option>
+                          {barbers.map((barber) => (
+                            <Listbox.Option
+                              key={barber._id}
+                              className={({ active }) =>
+                                `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                                  active ? 'bg-gold/10 text-gold' : 'text-gray-300'
+                                }`
+                              }
+                              value={barber}
+                            >
+                              {({ selected }) => (
+                                <>
+                                  <span
+                                    className={`block truncate ${
+                                      selected ? 'font-medium' : 'font-normal'
+                                    }`}
+                                  >
+                                    {barber.name}
+                                  </span>
+                                  {selected ? (
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gold">
+                                      <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                    </span>
+                                  ) : null}
+                                </>
+                              )}
+                            </Listbox.Option>
+                          ))}
+                        </Listbox.Options>
+                      </Transition>
+                    </div>
+                  </Listbox>
                 </div>
               )}
 
@@ -304,7 +425,7 @@ export default function BookingPage() {
                   value={formData.notes}
                   onChange={handleInputChange}
                   rows={3}
-                  className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-transparent text-white placeholder-gray-400"
+                  className="w-full px-4 py-3 bg-black border border-border rounded-lg focus:ring-2 focus:ring-gold focus:border-gold transition-all duration-200 text-white placeholder-gray-400 resize-none"
                   placeholder="Any special requests or notes..."
                 />
               </div>
@@ -315,9 +436,9 @@ export default function BookingPage() {
                   <div className="text-gray-300 text-sm space-y-1">
                     <p>Date: {format(selectedDate, 'EEEE, MMMM d, yyyy')}</p>
                     <p>Time: {selectedTime}</p>
-                    <p>Service: {services.find(s => s.id === formData.service)?.name}</p>
-                    {selectedBarber && (
-                      <p>Barber: {barbers.find(b => b._id === selectedBarber)?.name}</p>
+                    <p>Service: {selectedService.name}</p>
+                    {selectedBarberObj && (
+                      <p>Barber: {selectedBarberObj.name}</p>
                     )}
                   </div>
                 </div>
@@ -327,13 +448,13 @@ export default function BookingPage() {
                 <button
                   type="submit"
                   disabled={loading || !selectedDate || !selectedTime}
-                  className="flex-1 bg-gold hover:bg-gold-dark disabled:bg-gray-600 text-black disabled:text-gray-400 px-6 py-3 rounded-lg font-bold transition-colors"
+                  className="flex-1 bg-gold hover:bg-gold-dark disabled:bg-gray-600 disabled:cursor-not-allowed text-black disabled:text-gray-400 px-6 py-3 rounded-lg font-bold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-black transform hover:scale-105 disabled:hover:scale-100"
                 >
                   {loading ? 'Booking...' : 'Book Appointment'}
                 </button>
                 <Link
                   href="/queue/join"
-                  className="flex-1 bg-transparent border border-gold text-gold hover:bg-gold hover:text-black px-6 py-3 rounded-lg font-bold text-center transition-colors"
+                  className="flex-1 bg-transparent border border-gold text-gold hover:bg-gold hover:text-black px-6 py-3 rounded-lg font-bold text-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-black transform hover:scale-105"
                 >
                   Join Queue Instead
                 </Link>

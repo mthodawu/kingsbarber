@@ -127,7 +127,7 @@ export default function BarberLoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          {/* <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
               Demo credentials for testing:
             </p>
@@ -135,7 +135,7 @@ export default function BarberLoginPage() {
               <p className="text-gray-300">Email: demo@kingsbarber.com</p>
               <p className="text-gray-300">Password: demo123</p>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="text-center mt-8">

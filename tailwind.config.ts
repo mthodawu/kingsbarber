@@ -5,4 +5,12 @@ export default {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  theme: {
+    extend: {
+      fontFamily: {
+        'jacquard': ['var(--font-jacquard-24)', 'serif'],
+        'serif': ['var(--font-noto-serif)', 'serif'],
+      },
+    },
+  },
 };

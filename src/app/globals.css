@@ -1,15 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
+  --background: #000000;
   --foreground: #ededed;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-noto-serif), serif;
   min-height: 100vh;
+}
+
+/* Typography styles */
+h1 {
+  font-family: var(--font-jacquard-24), serif;
+  font-weight: 400;
+}
+
+h2, p {
+  font-family: var(--font-noto-serif), serif;
 }
 
 /* Custom Tailwind utilities for gold colors */
@@ -62,6 +72,12 @@ body {
   .bg-gold\/10 {
     background-color: rgba(255, 215, 0, 0.1);
   }
+  .font-jacquard {
+    font-family: var(--font-jacquard-24), serif;
+  }
+  .font-serif-body {
+    font-family: var(--font-noto-serif), serif;
+  }
 }
 
 /* Custom scrollbar */
@@ -80,29 +96,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #FFD700;
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  min-height: 100vh;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--gold-dark);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--gold);
 }

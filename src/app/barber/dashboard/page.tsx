@@ -3,16 +3,20 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { 
   UserGroupIcon, 
   CalendarIcon, 
   ClockIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ArrowRightIcon
 } from '@heroicons/react/24/outline';
 
 interface DashboardStats {
   totalQueue: number;
   todayAppointments: number;
+  avgWaitTime: number;
+  completedToday: number;
   nextAppointment: any;
   recentActivity: any[];
 }
@@ -22,6 +26,8 @@ export default function BarberDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
     totalQueue: 0,
     todayAppointments: 0,
+    avgWaitTime: 0,
+    completedToday: 0,
     nextAppointment: null,
     recentActivity: []
   });
@@ -49,9 +55,41 @@ export default function BarberDashboard() {
       const appointmentsResponse = await fetch('/api/appointments');
       const appointmentsData = await appointmentsResponse.json();
       
+      // Calculate average wait time from queue
+      const queue = queueData.queue || [];
+      const avgWaitTime = queue.length > 0 
+        ? Math.round(queue.reduce((sum: number, entry: any) => sum + entry.estimatedWait, 0) / queue.length)
+        : 0;
+      
+      // Get today's date range
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+      
+      // Fetch completed appointments for today
+      let completedToday = 0;
+      try {
+        const completedResponse = await fetch(`/api/appointments/completed?startDate=${startOfDay.toISOString()}&endDate=${endOfDay.toISOString()}`);
+        if (completedResponse.ok) {
+          const completedData = await completedResponse.json();
+          completedToday = completedData.success ? completedData.appointments.length : 0;
+        }
+      } catch (error) {
+        console.log('Completed appointments API not available, using fallback');
+        // Fallback: count completed appointments from regular appointments API
+        const allAppointments = appointmentsData.appointments || [];
+        completedToday = allAppointments.filter((apt: any) => 
+          apt.status === 'completed' && 
+          new Date(apt.date) >= startOfDay && 
+          new Date(apt.date) < endOfDay
+        ).length;
+      }
+      
       setStats({
-        totalQueue: queueData.queue?.length || 0,
+        totalQueue: queue.length,
         todayAppointments: appointmentsData.appointments?.length || 0,
+        avgWaitTime,
+        completedToday,
         nextAppointment: appointmentsData.appointments?.[0] || null,
         recentActivity: []
       });
@@ -91,31 +129,41 @@ export default function BarberDashboard() {
 
         {/* Stats Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-card border border-border rounded-lg p-6">
+          <Link href="/barber/queue" className="bg-card border border-border rounded-lg p-6 hover:border-gold/50 transition-colors group">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Queue Length</p>
                 <p className="text-3xl font-bold text-gold">{stats.totalQueue}</p>
               </div>
-              <UserGroupIcon className="h-8 w-8 text-gold" />
+              <div className="flex items-center space-x-2">
+                <UserGroupIcon className="h-8 w-8 text-gold" />
+                <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gold transition-colors" />
+              </div>
             </div>
-          </div>
+            <p className="text-xs text-gray-500 mt-2">Click to manage queue</p>
+          </Link>
 
-          <div className="bg-card border border-border rounded-lg p-6">
+          <Link href="/barber/appointments" className="bg-card border border-border rounded-lg p-6 hover:border-gold/50 transition-colors group">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Today's Appointments</p>
                 <p className="text-3xl font-bold text-gold">{stats.todayAppointments}</p>
               </div>
-              <CalendarIcon className="h-8 w-8 text-gold" />
+              <div className="flex items-center space-x-2">
+                <CalendarIcon className="h-8 w-8 text-gold" />
+                <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gold transition-colors" />
+              </div>
             </div>
-          </div>
+            <p className="text-xs text-gray-500 mt-2">Click to manage appointments</p>
+          </Link>
 
           <div className="bg-card border border-border rounded-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Avg Wait Time</p>
-                <p className="text-3xl font-bold text-gold">25m</p>
+                <p className="text-3xl font-bold text-gold">
+                  {stats.avgWaitTime > 0 ? `${stats.avgWaitTime}m` : 'N/A'}
+                </p>
               </div>
               <ClockIcon className="h-8 w-8 text-gold" />
             </div>
@@ -125,7 +173,7 @@ export default function BarberDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Completed Today</p>
-                <p className="text-3xl font-bold text-gold">8</p>
+                <p className="text-3xl font-bold text-gold">{stats.completedToday}</p>
               </div>
               <CheckCircleIcon className="h-8 w-8 text-gold" />
             </div>
@@ -137,17 +185,23 @@ export default function BarberDashboard() {
           <div className="bg-card border border-border rounded-lg p-6">
             <h2 className="text-xl font-bold text-gold mb-6">Quick Actions</h2>
             <div className="space-y-4">
-              <button className="w-full bg-gold hover:bg-gold-dark text-black px-4 py-3 rounded-lg font-medium transition-colors text-left">
-                Mark Next Customer as Served
-              </button>
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors text-left">
-                Add Walk-in Customer
-              </button>
+              <Link
+                href="/barber/queue"
+                className="w-full bg-gold hover:bg-gold-dark text-black px-4 py-3 rounded-lg font-medium transition-colors text-left block"
+              >
+                Manage Queue
+              </Link>
+              <Link
+                href="/barber/appointments"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors text-left block"
+              >
+                Manage Appointments
+              </Link>
               <button className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors text-left">
                 Update Wait Times
               </button>
               <button className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-3 rounded-lg font-medium transition-colors text-left">
-                View All Appointments
+                Generate Reports
               </button>
             </div>
           </div>
